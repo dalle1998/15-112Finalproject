@@ -71,7 +71,10 @@ def detectletter(pic,startrow,endrow,col):
                width.append(c)
                isblack=False
     pixels=width[:]
-           
+    for p in range(len(width)-1): # This conditional seperates the columns with black noise 
+        if width[p+1]-width[p]!=1:
+            pixels.insert((p+1),',')
+            
     if ',' in pixels:
         if len(pixels[:pixels.index(',')])<1: # This checks if the pixels detected are actualy just noise by checking if their width is less than 2.
             del width[:pixels.index(',')]
@@ -211,68 +214,50 @@ def readLetter(pic,startrow,endrow,startcol,endcol):
     part6_p=float(part6)/float(Q3_pixels/2)
     part7_p=float(part7)/float(Q2_pixels/2)
     part8_p=float(part8)/float(Q2_pixels/2)
-    return [part1_p,part2_p,part3_p,part4_p,part5_p,part6_p,part7_p,part8_p]        
+    return [part1_p,part2_p,part3_p,part4_p,part5_p,part6_p,part7_p,part8_p]
+
+def lastcolumn(pic,startrow,endrow):# This function checks what the last column of every line is in order to put a condition for the while loop below in the main function to stop looking
+    # for letters
+    
+    rows=getHeight(pic)
+    columns=getWidth(pic)
+    for c in range(columns):
+        islast=False
+        for r in range(startrow,endrow):
+            g=getColor(pic,c,r)
+            if g==[0,0,0] and not islast:
+                last=c
+                islast=True
+    return last
+
 def readAll(filename):
     lst=[]
     d={}
     pic=loadPicture(filename)
     convertBlackWhite(pic)
     lines=detectline(pic)
-    line1start=lines[0][0]
-    line1end=lines[0][1]
-    letterend=0
-    l='AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz'
-    for i in range(16):
-        col=detectletter(pic,line1start,line1end,letterend)
-        letterstartrow=letterlimit(pic,line1start,line1end,letterend)[0]
-        letterendrow=letterlimit(pic,line1start,line1end,letterend)[1]
-        letterstart=col[0]+1
-        letterend=col[1]+1
+    print lines
+   
+    count=0
+    l='AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz.,?!'
+    
+    for line in lines: # Goes through every line
+        line1start=line[0]
+        line1end=line[1]
+        letterend=0
         
-        letters1=readLetter(pic,letterstartrow,letterendrow,letterstart,letterend)
-        d[l[i]]=letters1
-        
-        
-    line2start=lines[1][0]
-    line2end=lines[1][1]
-    letterend=0
-    for i in range(16):
-        col=detectletter(pic,line2start,line2end,letterend)
-        letterstartrow=letterlimit(pic,line2start,line2end,letterend)[0]
-        letterendrow=letterlimit(pic,line2start,line2end,letterend)[1]
-        letterstart=col[0]+1
-        letterend=col[1]+1
-        
-        letters2=readLetter(pic,letterstartrow,letterendrow,letterstart,letterend)
-        d[l[i+16]]=letters2
-        
-    line3start=lines[2][0]
-    line3end=lines[2][1]
-    letterend=0
-    for i in range(16):
-        col=detectletter(pic,line3start,line3end,letterend)
-        letterstartrow=letterlimit(pic,line3start,line3end,letterend)[0]
-        letterendrow=letterlimit(pic,line3start,line3end,letterend)[1]
-        letterstart=col[0]+1
-        letterend=col[1]+1
-        
-        letters3=readLetter(pic,letterstartrow,letterendrow,letterstart,letterend)
-        d[l[i+32]]=letters3
-
-    line4start=lines[3][0]
-    line4end=lines[3][1]
-    letterend=0
-    for i in range(4):
-        col=detectletter(pic,line4start,line4end,letterend)
-        letterstartrow=letterlimit(pic,line4start,line4end,letterend)[0]
-        letterendrow=letterlimit(pic,line4start,line4end,letterend)[1]
-        letterstart=col[0]+1
-        letterend=col[1]+1
-        
-        letters4=readLetter(pic,letterstartrow,letterendrow,letterstart,letterend)
-        d[l[i+48]]=letters4
+        while letterend<lastcolumn(pic,line[0],line[1]): # While the line is not yet done
+            col=detectletter(pic,line1start,line1end,letterend)
+            letterstartrow=letterlimit(pic,line1start,line1end,letterend)[0]
+            letterendrow=letterlimit(pic,line1start,line1end,letterend)[1]
+            letterstart=col[0]
+            letterend=col[1]+1
+            
+            letters1=readLetter(pic,letterstartrow,letterendrow,letterstart,letterend)
+            d[l[count]]=letters1
+            count=count+1
        
-
+    print d
     File=open('Reference values for TNR format','w')
     for letter in d:
         File.write(letter+str(d[letter])+'\n')
