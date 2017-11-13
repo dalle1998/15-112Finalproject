@@ -4,17 +4,23 @@
 # Andrew ID: kdalle
 # Project name: Electronic text writer and dictionary
 # Libraries used: ImageWriter.py , urllib.py
-#
+# This is my main code.
 
 from ImageWriter import *
-from urllib import *
 
+
+''' In this project, Im using ImageWriter library to Opticaly recognize characters from an inputed image. The image has to include clear text with white background
+    and the text should be In Times New Roman Font. My code recognizes each letter by splitting the image of the letter into 8 parts and finding the ratio of black
+    pixels to the total for each part. The code then compares the values gotten for each part to reference values obtained by the same algorithem ( from
+    refrencevalues.py). I do that by finding the difference between the values of each part, then adding the difference divided by the number of parts which is 8
+    i put the values in a list in order to sort them and find the lowest number and that number would correspond to the correct letter. When I get the whole text,
+    I write it into a file.'''
 
 d={}
-f=open('Reference values for TNR format','r')
+f=open('Reference values for TNR format','r') # I first read from the file that the reference values were saved in from the refrencevalues.py code line by line
 line=f.readline()
 while line:
-    d[line[0]]=eval(line[1:])
+    d[line[0]]=eval(line[1:]) # I save the values for each part of each letter in a dictionary.
     line=f.readline()
 
 
@@ -32,9 +38,8 @@ def convertBlackWhite(pic):
                 setColor(pic,j,i,[0,0,0])
     showPicture(pic)
 
-def detectline(pic):
-    #pic=loadPicture(pic)
-    #convertBlackWhite(pic)
+def detectline(pic): # This function detects the start and end row of every line in the text from the image.
+    
     rows= getHeight(pic)
     columns=getWidth(pic)
     isLine=False
@@ -43,7 +48,7 @@ def detectline(pic):
     result=[]
     linestart=[]
     for r in range(rows): # Going through the whole picture, if one black pixel is found in one row, then it breaks the loop (by setting isLine to True) and goes
-                          # through the next row.
+                          # through the next row. This loop appends the values for the rows that have black pixels in them
         isLine=False
         for c in range(columns):
             g=getColor(pic,c,r)
@@ -53,7 +58,7 @@ def detectline(pic):
                 linestart.append(r)
                 
               
-    for r in range(len(linestart)-1): # Here I checked the starts and ends of the blobs by checking the rows that are not consecutive.
+    for r in range(len(linestart)-1): # Here I checked the starts and ends of the lines by checking the rows that are not consecutive.
         if linestart[r+1]-linestart[r]>1:
             startOfLine.append(linestart[r+1])
             endOfLine.append(linestart[r])
@@ -61,13 +66,12 @@ def detectline(pic):
     startOfLine=[linestart[0]]+startOfLine
     endOfLine=endOfLine+[linestart[len(linestart)-1]]
     for i in range(len(endOfLine)):
-        result.append((startOfLine[i],endOfLine[i]))
+        result.append((startOfLine[i],endOfLine[i]))# Appending the values into a list of tuples
 
     return result
 
-def detectletter(pic,startrow,endrow,col):
-    #pic=loadPicture(pic)
-    #convertBlackWhite(pic)
+def detectletter(pic,startrow,endrow,col):# This function detects the first and last column for each letter given the line the letter is at (startrow and endrow)
+    
     rows=getHeight(pic)
     columns=getWidth(pic)
     width=[]
@@ -87,8 +91,6 @@ def detectletter(pic,startrow,endrow,col):
             pixels.insert((p+1),',')
            
     if ',' in pixels:
-        if len(pixels[:pixels.index(',')])<1: # This checks if the pixels detected are actualy just noise by checking if their width is less than 2.
-            del width[:pixels.index(',')]
         
         for p in range(len(width)-1):
             if width[p]-width[p-1]!=1:
@@ -109,9 +111,8 @@ def detectletter(pic,startrow,endrow,col):
         
         return [width[0],width[len(width)-1]]
 
-def letterlimit(pic,startrow,endrow,col):
-    #pic=loadPicture(pic)
-    #convertBlackWhite(pic)
+def letterlimit(pic,startrow,endrow,col):# If the letter detect was a small letter then the start row of the line will be different than the start row of the letter itself
+    # thus this function finds the start and end rows of the letters themselves in case they were different than that of the lines
     letterborders=[]
     rows=getHeight(pic)
     columns=getWidth(pic)
@@ -127,7 +128,7 @@ def letterlimit(pic,startrow,endrow,col):
                 letterborders.append(r)
     return [letterborders[0],letterborders[len(letterborders)-1]]
 
-def readLetter(pic,startrow,endrow,startcol,endcol,d):
+def readLetter(pic,startrow,endrow,startcol,endcol,d): # This function is responsible for comparing the percentage of black pixels for each letter to the refrence letters
     black=[]
     count=0
     part1=0
@@ -138,13 +139,6 @@ def readLetter(pic,startrow,endrow,startcol,endcol,d):
     part6=0
     part7=0
     part8=0
-    for r in range(startrow,endrow): # To differintiate between i and t
-        isBlack=False
-        for c in range(startcol,endcol):
-            g=getColor(pic,c,r)
-            if g==[0,0,0] and not isBlack :
-                isBlack=True
-                black.append(r)
                 
     rows=getHeight(pic)
     columns=getWidth(pic)
@@ -155,7 +149,7 @@ def readLetter(pic,startrow,endrow,startcol,endcol,d):
     Q3_pixels=((midcolumn-startcol)*(endrow-midrow))
     Q4_pixels=((endcol-midcolumn)*(endrow-midrow))
     
-    for r in range(startrow,midrow):
+    for r in range(startrow,midrow): # Goes through the first part which is half the first quadrent and counts the number of black pixels
         i=endcol-count
         count=count+1
         for c in range(midcolumn,i):
@@ -164,7 +158,7 @@ def readLetter(pic,startrow,endrow,startcol,endcol,d):
             if g==[0,0,0]:
                 part1=part1+1
     count=1
-    for r in range(startrow,midrow):
+    for r in range(startrow,midrow): # Goes through the second part
         i=endcol-count
         count=count+1
         for c in range(i,endcol):
@@ -175,7 +169,7 @@ def readLetter(pic,startrow,endrow,startcol,endcol,d):
                 if g==[0,0,0]:
                     part2=part2+1
     count=0
-    for r in range(midrow,endrow):
+    for r in range(midrow,endrow):# Goes through the third part
         i=midcolumn+count
         count=count+1
         for c in range(i,endcol):
@@ -183,7 +177,7 @@ def readLetter(pic,startrow,endrow,startcol,endcol,d):
             if g==[0,0,0]:
                 part3=part3+1
     count=1
-    for r in range(midrow,endrow):
+    for r in range(midrow,endrow):# Goes through the fourth part
         i=midcolumn+count
         count=count+1
         for c in range(midcolumn,i):
@@ -193,7 +187,7 @@ def readLetter(pic,startrow,endrow,startcol,endcol,d):
                 if g==[0,0,0]:
                     part4=part4+1
     count=1
-    for r in range(midrow,endrow):
+    for r in range(midrow,endrow):# Goes through the fifth part
         i=midcolumn-count
         count=count+1
         for c in range(i,midcolumn):
@@ -202,7 +196,7 @@ def readLetter(pic,startrow,endrow,startcol,endcol,d):
                 if g==[0,0,0]:
                     part5=part5+1
     count=0
-    for r in range(midrow,endrow):
+    for r in range(midrow,endrow):# Goes through the sixth part
         i=midcolumn-count
         count=count+1
         for c in range(startcol,i):
@@ -210,7 +204,7 @@ def readLetter(pic,startrow,endrow,startcol,endcol,d):
             if g==[0,0,0]:
                 part6=part6+1
     count=1
-    for r in range(startrow,midrow):
+    for r in range(startrow,midrow):# Goes through the seventh part
         i=startcol+count
         count=count+1
         for c in range(startcol,i):
@@ -219,7 +213,7 @@ def readLetter(pic,startrow,endrow,startcol,endcol,d):
                 if g==[0,0,0]:
                     part7=part7+1
     count=0
-    for r in range(startrow,midrow):
+    for r in range(startrow,midrow):# Goes through the eighth and final part
         i=startcol+count
         count=count+1
         for c in range(i,midcolumn):
@@ -228,16 +222,16 @@ def readLetter(pic,startrow,endrow,startcol,endcol,d):
                 part8=part8+1           
     
     #These are the %'s of black to total for each of the 8 parts
-    if (Q1_pixels/2)!=0 or (Q2_pixels/2)!=0 or (Q3_pixels/2)!=0 or (Q4_pixels/2)!=0:
-        
-        part1_p=float(part1)/float(Q1_pixels/2)
-        part2_p=float(part2)/float(Q1_pixels/2)
-        part3_p=float(part3)/float(Q4_pixels/2)
-        part4_p=float(part4)/float(Q4_pixels/2)
-        part5_p=float(part5)/float(Q3_pixels/2)
-        part6_p=float(part6)/float(Q3_pixels/2)
-        part7_p=float(part7)/float(Q2_pixels/2)
-        part8_p=float(part8)/float(Q2_pixels/2)
+    
+    
+    part1_p=float(part1)/float(Q1_pixels/2)
+    part2_p=float(part2)/float(Q1_pixels/2)
+    part3_p=float(part3)/float(Q4_pixels/2)
+    part4_p=float(part4)/float(Q4_pixels/2)
+    part5_p=float(part5)/float(Q3_pixels/2)
+    part6_p=float(part6)/float(Q3_pixels/2)
+    part7_p=float(part7)/float(Q2_pixels/2)
+    part8_p=float(part8)/float(Q2_pixels/2)
       
 
     # This piece of code is to find added differences between the
@@ -886,112 +880,113 @@ def readLetter(pic,startrow,endrow,startcol,endcol,d):
     #print possible
     
     
-    if possible[0]==A: # These conditionals checks for which number the proccesed one corresponds 
+    if possible[0]==A: # These conditionals checks for which letter the proccesed one corresponds 
         return 'A'
-    if possible[0]==a:
+    elif possible[0]==a:
         return 'a'
-    if possible[0]==B:
+    elif possible[0]==B:
         return 'B'
-    if possible[0]==b:
+    elif possible[0]==b:
         return 'b'
-    if possible[0]==C:
+    elif possible[0]==C:
         return 'C'
-    if possible[0]==c:
+    elif possible[0]==c:
         return 'c'
-    if possible[0]==D:
+    elif possible[0]==D:
         return 'D'
-    if possible[0]==dletter:
+    elif possible[0]==dletter:
         return 'd'
-    if possible[0]==E:
+    elif possible[0]==E:
         return 'E'
-    if possible[0]==e:
+    elif possible[0]==e:
         return 'e'
-    if possible[0]==F:
+    elif possible[0]==F:
         return 'F'
-    if possible[0]==f:
+    elif possible[0]==f:
         return 'f'
-    if possible[0]==G:
+    elif possible[0]==G:
         return 'G'
-    if possible[0]==g:
+    elif possible[0]==g:
         return 'g'
-    if possible[0]==H:
+    elif possible[0]==H:
         return 'H'
-    if possible[0]==h:
+    elif possible[0]==h:
         return 'h'
-    if possible[0]==I:
+    elif possible[0]==I:
         return 'I'
-    if possible[0]==i:
+    elif possible[0]==i:
         return 'i'
-    if possible[0]==J:
+    elif possible[0]==J:
         return 'J'
-    if possible[0]==j:
+    elif possible[0]==j:
         return 'j'
-    if possible[0]==K:
+    elif possible[0]==K:
         return 'K'
-    if possible[0]==k:
+    elif possible[0]==k:
         return 'k'
-    if possible[0]==L:
+    elif possible[0]==L:
         return 'L'
-    if possible[0]==l:
+    elif possible[0]==l:
         return 'l'
-    if possible[0]==M:
+    elif possible[0]==M:
         return 'M'
-    if possible[0]==m:
+    elif possible[0]==m:
         return 'm'
-    if possible[0]==N:
+    elif possible[0]==N:
         return 'N'
-    if possible[0]==n:
+    elif possible[0]==n:
         return 'n'
-    if possible[0]==O:
+    elif possible[0]==O:
         return 'O'
-    if possible[0]==o:
+    elif possible[0]==o:
         return 'o'
-    if possible[0]==P:
+    elif possible[0]==P:
         return 'P'
-    if possible[0]==p:
+    elif possible[0]==p:
         return 'p'
-    if possible[0]==Q:
+    elif possible[0]==Q:
         return 'Q'
-    if possible[0]==q:
+    elif possible[0]==q:
         return 'q'
-    if possible[0]==R:
+    elif possible[0]==R:
         return 'R'
-    if possible[0]==r:
+    elif possible[0]==r:
         return 'r'
-    if possible[0]==S:
+    elif possible[0]==S:
         return 'S'
-    if possible[0]==s:
+    elif possible[0]==s:
         return 's'
-    if possible[0]==T:
+    elif possible[0]==T:
         return 'T'
-    if possible[0]==t:
+    elif possible[0]==t:
         return 't'
-    if possible[0]==U:
+    elif possible[0]==U:
         return 'U'
-    if possible[0]==u:
+    elif possible[0]==u:
         return 'u'
-    if possible[0]==V:
+    elif possible[0]==V:
         return 'V'
-    if possible[0]==v:
+    elif possible[0]==v:
         return 'v'
-    if possible[0]==W:
+    elif possible[0]==W:
         return 'W'
-    if possible[0]==w:
+    elif possible[0]==w:
         return 'w'
-    if possible[0]==X:
+    elif possible[0]==X:
         return 'X'
-    if possible[0]==x:
+    elif possible[0]==x:
         return 'x'
-    if possible[0]==Y:
+    elif possible[0]==Y:
         return 'Y'
-    if possible[0]==y:
+    elif possible[0]==y:
         return 'y'
-    if possible[0]==Z:
+    elif possible[0]==Z:
         return 'Z'
-    if possible[0]==z:
+    elif possible[0]==z:
         return 'z'
 
-def lastcolumn(pic,startrow,endrow):
+def lastcolumn(pic,startrow,endrow):# This function checks what the last column of every line is in order to put a condition for the while loop below in the main function to stop looking
+    # for letters
     
     rows=getHeight(pic)
     columns=getWidth(pic)
@@ -1004,34 +999,34 @@ def lastcolumn(pic,startrow,endrow):
                 islast=True
     return last
 
-def readAll(filename,d):
+def readAll(filename,d):# This is the main function for running the whole image proccessing.
     lst=[]
     
     word=''
     pic=loadPicture(filename)
     convertBlackWhite(pic)
     lines=detectline(pic)
-    print lines
-    for line in lines:
+    for line in lines: # Goes through every line
         line1start=line[0]
         line1end=line[1]
         letterend=0
-        word+='\n'
-        while letterend<lastcolumn(pic,line[0],line[1]):
+        word+='\n' 
+        while letterend<lastcolumn(pic,line[0],line[1]): # While the line is not yet done
             col=detectletter(pic,line1start,line1end,letterend)
             letterstartrow=letterlimit(pic,line1start,line1end,letterend)[0]
             letterendrow=letterlimit(pic,line1start,line1end,letterend)[1]
             letterstart=col[0]
-            if letterstart-letterend > 5:
+            if letterstart-letterend > 5: # If the space between the letters is more than 5 then theres is a space there
                 word+=' '
             letterend=col[1]+1
-            #print letterend
-            #print letterstartrow , letterendrow ,letterstart, letterend
+            
             letters1=readLetter(pic,letterstartrow,letterendrow,letterstart,letterend,d)
             word+=letters1
     F=open('name','w')
-    F.write(word)
+    F.write(word) # Writing the text into a text file for the user to read from it.
     F.close()
-    print word    
+    print word
+
+    
 print readAll('test11.jpg',d)
 

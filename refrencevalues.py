@@ -2,12 +2,13 @@
 # File Created: November 1 , 12:49 p.m
 # Name: Kenana Dalle
 # Andrew ID: kdalle
-# Project name: Electronic text writer and dictionary
-# Libraries used: ImageWriter.py , urllib.py
-#
+# Project name: Electronic text writer.
+# Libraries used: ImageWriter.py 
+# This code is for generating reference values needed for the main code.
 
 from ImageWriter import *
-from urllib import *
+''' This code generates the reference values for the 8 parts for each capital and small letters From A to Z. It follows the same algorithem as my main with the
+    difference of just generating the percentages for each part.'''
 
 
 # Taking the image and converting it to black and white
@@ -44,7 +45,7 @@ def detectline(pic):
                 linestart.append(r)
                 
               
-    for r in range(len(linestart)-1): # Here I checked the starts and ends of the blobs by checking the rows that are not consecutive.
+    for r in range(len(linestart)-1): # Here I checked the starts and ends of the lines by checking the rows that are not consecutive.
         if linestart[r+1]-linestart[r]>1:
             startOfLine.append(linestart[r+1])
             endOfLine.append(linestart[r])
@@ -57,8 +58,6 @@ def detectline(pic):
     return result
 
 def detectletter(pic,startrow,endrow,col):
-    #pic=loadPicture(pic)
-    #convertBlackWhite(pic)
     rows=getHeight(pic)
     columns=getWidth(pic)
     width=[]
@@ -72,10 +71,6 @@ def detectletter(pic,startrow,endrow,col):
                width.append(c)
                isblack=False
     pixels=width[:]
-    
-    for p in range(len(width)-1): # This conditional seperates the columns with black noise 
-        if width[p+1]-width[p]!=1:
-            pixels.insert((p+1),',')
            
     if ',' in pixels:
         if len(pixels[:pixels.index(',')])<1: # This checks if the pixels detected are actualy just noise by checking if their width is less than 2.
@@ -100,8 +95,7 @@ def detectletter(pic,startrow,endrow,col):
         
         return [width[0],width[len(width)-1]]
 def letterlimit(pic,startrow,endrow,col):
-    #pic=loadPicture(pic)
-    #convertBlackWhite(pic)
+
     letterborders=[]
     rows=getHeight(pic)
     columns=getWidth(pic)
@@ -127,8 +121,6 @@ def readLetter(pic,startrow,endrow,startcol,endcol):
     part6=0
     part7=0
     part8=0
-    #pic=loadPicture(pic)
-    #convertBlackWhite(pic)
     rows=getHeight(pic)
     columns=getWidth(pic)
     midrow=range(startrow,endrow)[len(range(startrow,endrow))/2] # This is to seperate the picture into four quadrents
@@ -226,7 +218,6 @@ def readAll(filename):
     pic=loadPicture(filename)
     convertBlackWhite(pic)
     lines=detectline(pic)
-    print lines
     line1start=lines[0][0]
     line1end=lines[0][1]
     letterend=0
