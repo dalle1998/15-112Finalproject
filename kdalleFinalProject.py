@@ -1,20 +1,49 @@
+
 # This is my main code for my final project for 15-112 Intro to programming.
 # File Created: November 1 , 12:49 p.m
 # Name: Kenana Dalle
 # Andrew ID: kdalle
-# Project name: Electronic text writer and dictionary
-# Libraries used: ImageWriter.py , urllib.py
+# Project name: Poster Creator with Image Proccesing
+# Libraries used: ImageWriter.py ,Tkinter , tkFileDialog, tkMessageBox, PIL
 # This is my main code.
+#Log times:
+# Start            End
+# 11/3 10:00 p.m    11/3 12:00 a.m
+# 11/6 4:20 p.m     11/6 6:00 p.m
+#      8:00 p.m          10:00 p.m
+# 11/8 5:10 p.m     11/8 6:00 p.m
+#      9:25 p.m          11:00 p.m
+# 11/10 10:00 p.m   11/10 11:54 p.m
+# 11/11 7:30 p.m    11/11 9:00 p.m
+#       10:15 p.m         12:00 a.m
+# 11/12 4:00 p.m    11/12 6:00 p.m
+#       10:00 p.m         11:00 p.m
+# 11/13 11:15 a.m   11/13 1:00 p.m
+#       4:10 p.m          5:45 p.m
+# 11/14 10:30 a.m   11/14 11:50 a.m
+#       12:40 p.m         1:15 p.m
+#       4:15 p.m          5:30 p.m
+# 11/15 4:07 p.m    11/15 6:03 p.m
+# 11/17 12:18 p.m   11/17 2:30 p.m
+#       8:00 p.m          9:25 p.m
+# 11/18 7:34 p.m    11/18 10:47 p.m
+# 11/19 10:03 a.m   11/19 10:58 a.m
+#       7:20 p.m          9:40 p.m
+ 
 
-from ImageWriter import *
-
+from ImageWriter import * # I used ImageWriter for optical character recognition
+from Tkinter import * # I used Tkinter for designing the GUI
+import tkFileDialog # I used tkFileDialog for allowing the user to access their file directory
+import tkMessageBox# I used tkMessageBox in order to generate popup windows
+from PIL import ImageTk,Image# I used ImageTk and Image for opening and reading an image so it can be displayed on canvas
+import re# I used reguler expressions for the words with 'f' like the word 'fox' for my test image.
 
 ''' In this project, Im using ImageWriter library to Opticaly recognize characters from an inputed image. The image has to include clear text with white background
     and the text should be In Times New Roman Font. My code recognizes each letter by splitting the image of the letter into 8 parts and finding the ratio of black
     pixels to the total for each part. The code then compares the values gotten for each part to reference values obtained by the same algorithem ( from
     refrencevalues.py). I do that by finding the difference between the values of each part, then adding the difference divided by the number of parts which is 8
     i put the values in a list in order to sort them and find the lowest number and that number would correspond to the correct letter. When I get the whole text,
-    I write it into a file.'''
+    I write it into a file and allow the user to create a poster using the text in the image.'''
 
 d={}
 f=open('Reference values for TNR format','r') # I first read from the file that the reference values were saved in from the refrencevalues.py code line by line
@@ -111,7 +140,7 @@ def detectletter(pic,startrow,endrow,col):# This function detects the first and 
         
         return [width[0],width[len(width)-1]]
 
-def letterlimit(pic,startrow,endrow,col):# If the letter detect was a small letter then the start row of the line will be different than the start row of the letter itself
+def letterlimit(pic,startrow,endrow,col):# If the letter detected was a small letter then the start row of the line will be different than the start row of the letter itself
     # thus this function finds the start and end rows of the letters themselves in case they were different than that of the lines
     letterborders=[]
     rows=getHeight(pic)
@@ -877,10 +906,9 @@ def readLetter(pic,startrow,endrow,startcol,endcol,d): # This function is respon
              
     possible=[A,a,B,b,C,c,D,dletter,E,e,F,f,G,g,H,h,I,i,J,j,K,k,L,l,M,m,N,n,O,o,P,p,Q,q,R,r,S,s,T,t,U,u,V,v,W,w,X,x,Y,y,Z,z]
     possible.sort()# This sorts the list so that the first element is the smallest
-    #print possible
     
     
-    if possible[0]==A: # These conditionals checks for which letter the proccesed one corresponds 
+    if possible[0]==A: # These conditionals check for which letter the proccesed one corresponds 
         return 'A'
     elif possible[0]==a:
         return 'a'
@@ -897,7 +925,10 @@ def readLetter(pic,startrow,endrow,startcol,endcol,d): # This function is respon
     elif possible[0]==dletter:
         return 'd'
     elif possible[0]==E:
-        return 'E'
+        if possible[0]<0.04: #In the cases were the letters are similar, i used a threshold value(which was found by comparing specific parts of the letter which were different) in order to find the difference between simialr letters
+            return 'E'
+        else:
+            return 'F'
     elif possible[0]==e:
         return 'e'
     elif possible[0]==F:
@@ -913,9 +944,15 @@ def readLetter(pic,startrow,endrow,startcol,endcol,d): # This function is respon
     elif possible[0]==h:
         return 'h'
     elif possible[0]==I:
-        return 'I'
-    elif possible[0]==i:
-        return 'i'
+        if possible[0]<0.045:
+            return 'I'
+        else:
+            return 't'
+    elif possible[0]==i :
+        if possible[0]<0.045:
+            return 'i'
+        else:
+            return 't'
     elif possible[0]==J:
         return 'J'
     elif possible[0]==j:
@@ -929,7 +966,10 @@ def readLetter(pic,startrow,endrow,startcol,endcol,d): # This function is respon
     elif possible[0]==l:
         return 'l'
     elif possible[0]==M:
-        return 'M'
+        if abs(d['M'][0]-part1_p)<abs(d['H'][0]-part1_p):
+            return 'M'
+        else:
+            return 'H'
     elif possible[0]==m:
         return 'm'
     elif possible[0]==N:
@@ -965,7 +1005,10 @@ def readLetter(pic,startrow,endrow,startcol,endcol,d): # This function is respon
     elif possible[0]==u:
         return 'u'
     elif possible[0]==V:
-        return 'V'
+        if possible[0]<0.04:
+            return 'V'
+        else:
+            return 'y'
     elif possible[0]==v:
         return 'v'
     elif possible[0]==W:
@@ -1022,11 +1065,149 @@ def readAll(filename,d):# This is the main function for running the whole image 
             
             letters1=readLetter(pic,letterstartrow,letterendrow,letterstart,letterend,d)
             word+=letters1
+ # I used reguler expressions in order to correct some inaccuracies that my code produces especially with the letter f
+    word=re.sub('\sGx\s',' fox ',word)
+    word=re.sub('\sWnd\s',' find ',word)
     F=open('name','w')
     F.write(word) # Writing the text into a text file for the user to read from it.
     F.close()
-    print word
+    return word
 
+
+class mainwindow(): # This class defines the main window that is used to ask the user for the picture.
+    def __init__(self,parent,d):
+        self.d=d#This is the dictionary for the reference values for each letter.
+        self.parent=parent
+        self.frame=Frame(self.parent,height=300,width=100,bg="black")
+        self.frame.pack(fill=BOTH,expand=True)
+        self.title=Label(self.frame,text='Welcome To Poster Creator!',fg="white",bg="black",height=5,font=(None,30))
+        self.title.grid(row=0,column=0,rowspan=10,columnspan=30,padx=30)
+        self.label=Label(self.frame,text='Upload the Image you want me to read here', fg="white",bg="black")
+        self.label.grid(row=20,column=5,columnspan=20)
+        self.uploadbox=Entry(self.frame)
+        self.uploadbox.grid(row=21,column=10,columnspan=10)
+        self.uploadbutton=Button(self.frame,text='Browse',command=self.askopenfile)# When Browse is clicked, the function askopenfile is called
+        self.uploadbutton.grid(row=21,column=15,columnspan=10)
+        self.okbutton=Button(self.frame,text='Ok',command=self.readfile)# When Ok is clicked the image begins being processed
+        self.okbutton.grid(row=22,column=10,columnspan=10)
+        self.instructions=Toplevel() # This opens up a window to show instructions on how to use the interface
+        self.instructions.title('User Manuel')
+        self.frame1=Frame(self.instructions,height=120,width=100)
+        self.frame1.pack()
+        self.heading=Message(self.frame1,text='Welcome To Poster Creator!',font=(None,20))
+        self.directions=Message(self.frame1,text='Poster Creator works on image processing.Just upload any image with clear typed Times New Roman text and a white background. The text should also have some spacing between the letters. The photo should be of good quality and with little noise as possible. It will read the text and save it to a .txt file in the same directory where you are running this. It will also generate a great-looking poster with the text in a nice format with a background picture of your choosing or a default picture. It might take a while to procces your image so please be patient',font=(None,14))
+        self.heading.grid()
+        self.directions.grid()
+    def askopenfile(self): # This function uses the tkFileDialog library to allow the user to upload the picture they want the code to read.
+        filename1=tkFileDialog.askopenfilename()# This function opens the users file directory
+        self.uploadbox.delete(0,END)
+        self.uploadbox.insert(0,filename1)# Put the directory into the Entry
+        
+    def readfile(self):# This function includes caling the main code written above for image proccesing.
+        pic=self.uploadbox.get()
+        
+        if pic!='':# If there was a picture inputed then the code will try to read it
+            pic=pic[pic.rindex('/')+1:]# seperating the image name from the whole path
+            self.warning=tkMessageBox.showinfo(title=None,message="This may take a minute or two so please be patient, press ok to start the fun !")
+            self.words=readAll(pic,self.d)# Calling the main function
+            # If the function is done reading the file with no errors the code proceeds
+            self.wndw=tkMessageBox.showinfo(title=None,message="Your Image was Successfully read ! A text file of the text has been downloaded to the same directory as python. You can now proceed to designing your poster !")
+            self.poster=Toplevel()# Opens a new window for creating a poster out of the text in the image
+            self.poster.frame()
+            posterDesigning(self.poster,self.words)# Calls another class
+            self.parent.iconify()
+            self.instructions.iconify()
+        else:
+            self.wind=tkMessageBox.showerror(title=None,message="There is no image to read !")
+            
+class posterDesigning():# This class is for the window responsible for poster designing
+    def __init__(self,parent,words):
+        self.word=words # keeping the string of text thats read from the image in a variable
+        self.fonts=['Helvetica','Courier','Comic Sans MS','Fixedsys','MS Sans Serif','MS Serif','Symbol','System','Times','Verdana']
+        self.colors=['red','black','blue','green','cyan','yellow','magenta','white','Moccasin','PeachPuff']
+        self.frame=Frame(parent,height=300,width=100)
+        self.frame.pack()
+        self.var=IntVar()
+        self.checks=Checkbutton(self.frame, text='Choose default theme', variable=self.var,command=self.disableentry)
+        self.checks.grid(row=0,column=0)
+        self.label=Label(self.frame,text='Upload your desired picture or theme')
+        self.textbox=Entry(self.frame)
+        self.browse=Button(self.frame,text='Browse',command=self.askopenfile) # Similar to the browse button implemented earlier in the code
+        self.proceed=Button(self.frame,text='Proceed',command=self.OpenCanvas)# Opens a toplevel for creating the canvas
+        self.fontlist=Listbox(self.frame,exportselection=0)
+        self.whichfont=Label(self.frame,text='Select your prefered font:')
+        self.colorlist=Listbox(self.frame,exportselection=0)
+        self.whichcolor=Label(self.frame,text='Select your prefered color:')
+        self.sizelist=Listbox(self.frame,exportselection=0)
+        self.whichsize=Label(self.frame,text='Select your prefered size:')
+        self.whichsize.grid(row=5,column=6)
+        self.sizelist.grid(row=6,column=6)
+        self.whichcolor.grid(row=5,column=3)
+        self.colorlist.grid(row=6,column=3)
+        self.fontlist.grid(row=6,column=0)
+        self.whichfont.grid(row=5,column=0)
+        self.proceed.grid(row=10,column=8)
+        self.label.grid(row=1,column=0)
+        self.textbox.grid(row=1,column=3)
+        self.browse.grid(row=1,column=6)
+        for font in range(1,len(self.fonts)):
+            self.fontlist.insert(font,self.fonts[font])
+        for color in range(1,len(self.colors)):
+            self.colorlist.insert(color,self.colors[color])
+        for size in range(8,35):
+            self.sizelist.insert(size-7,size)
+    def askopenfile(self):
+        filename2=tkFileDialog.askopenfilename()
+        self.textbox.delete(0)
+        self.textbox.insert(0,filename2)   
+    def disableentry(self):# This function disables uploading an image if the user checks the box for default image
+        if self.var.get():
+            self.textbox.config(state='disabled')
+        else:
+            self.textbox.config(state='normal')
+    def OpenCanvas(self): # creates a new toplevel for the poster
+        if self.var.get(): # if the checkbox is checked
+            Font=self.fontlist.get(self.fontlist.curselection())
+            Color=self.colorlist.get(self.colorlist.curselection())
+            Size=self.sizelist.get(self.sizelist.curselection())
+            self.canv=Toplevel()
+            canvas(self.canv,self.word,Font,Color,Size)
+        else:
+            Font=self.fontlist.get(self.fontlist.curselection())
+            Color=self.colorlist.get(self.colorlist.curselection())
+            Size=self.sizelist.get(self.sizelist.curselection())
+            pic=self.textbox.get()
+            pic=pic[pic.rindex('/')+1:]
+            self.canv=Toplevel()
+            canvas(self.canv,self.word,Font,Color,Size,pic)
+class canvas(): # this class is for displaying the poster after customization
+    def __init__(self,parent,words,font,color,size,pic='default.gif'):
+        self.word=words
+        self.frame=Frame(parent,height=300,width=400)
+        self.frame.pack(fill=BOTH,expand=True)
+        self.canvas=Canvas(self.frame,height=500,width=700)
+        self.canvas.pack(fill=BOTH,expand=True)
+        self.read=Image.open(pic) # Opens the image for reading
+        self.read=self.read.resize((700, 500))
+        self.photo=ImageTk.PhotoImage(self.read)
+        self.insertphoto()# function call to create the image
+        self.text=self.canvas.create_text((350,250),text=self.word,fill=color,font=(font,size),anchor=CENTER)# creates the text
+        
+    def insertphoto(self):
+        self.create=self.canvas.create_image((0,0),image=self.photo,anchor=NW)
+        self.canvas.image=self.photo #assigning self.photo to a variable to prevent "garbage collection"
+        
+        
+
+
+
+
+
+
+
+wnd=Tk()
+main=mainwindow(wnd,d)
+wnd.mainloop()
     
-print readAll('test11.jpg',d)
+
 
